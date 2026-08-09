@@ -23,15 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         whatweb \
     && rm -rf /var/lib/apt/lists/*
 
-# === 融合版新增：MCP 扩展安全工具 ===
+# === 融合版新增：MCP 扩展安全工具（只装 debian 源里有的，其余从 release 拉） ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nikto \
-        gobuster \
         dirb \
-        wordlists \
         hydra \
         john \
-        masscan \
     && rm -rf /var/lib/apt/lists/*
 
 # sqlmap（git 安装，复用官方）
