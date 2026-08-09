@@ -87,10 +87,11 @@ class MCPExecution:
         self._executions: dict[str, ExecutionState] = {}
         self._tasks: dict[str, asyncio.Task] = {}
 
-    def submit(self, tool_name: str, args: dict, timeout: float = 120) -> str:
+    async def submit(self, tool_name: str, args: dict, timeout: float = 120) -> str:
         """提交后台执行，返回 execution_id。
 
         通过 asyncio.create_task 独立运行，脱离调用方 ctx。
+        注意：必须在事件循环内调用（async 上下文），否则 create_task 报 RuntimeError。
         """
         execution_id = uuid.uuid4().hex[:16]
         state = ExecutionState(
@@ -334,6 +335,8 @@ class MCPExecution:
             # 等待超时，返回当前状态（任务仍在后台运行）
             pass
 
+        # wait 完成后自动清理过期终态记录，避免内存泄漏
+        self.cleanup()
         return state.to_dict()
 
     def cancel(self, execution_id: str) -> bool:

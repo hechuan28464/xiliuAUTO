@@ -290,6 +290,7 @@ _SEGMENT_MODULE_MAP: dict[str, str] = {
     "runtime-logs": "audit",   # 运行日志归入审计模块
     "update": "config",         # 系统更新归入配置模块
     "findings": "vuln",          # 漏洞发现项归入漏洞模块
+    "results": "finding",        # /api/results/* 归入漏洞发现项模块
 }
 
 

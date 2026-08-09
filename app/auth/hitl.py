@@ -363,6 +363,9 @@ async def resolve_approval(
         "reviewer": decided_by,
         "comment": comment,
     })
+    # 决议完成：从内存缓存删除（DB 是 source of truth，后续查询走 DB）
+    with _pending_lock:
+        _pending_approvals.pop(approval_id, None)
     return True
 
 
@@ -431,11 +434,14 @@ async def cleanup_expired() -> int:
     now_ts = time.time()
     expired_ids = []
     with _pending_lock:
-        for aid, req in _pending_approvals.items():
+        # 遍历快照，避免遍历中修改字典
+        for aid, req in list(_pending_approvals.items()):
             if req["status"] == "pending" and (now_ts - req["created_at"]) > _HITL_TIMEOUT:
                 req["status"] = "timeout"
                 req["decision"] = "reject"
                 expired_ids.append(aid)
+                # 删除已超时条目，避免内存泄漏
+                _pending_approvals.pop(aid, None)
 
     # DB 清理：超时 pending 记录标记为 timeout + reject
     try:
@@ -510,6 +516,8 @@ async def cleanup_orphans() -> int:
             if req["status"] == "pending":
                 req["status"] = "cancelled"
                 req["decision"] = "reject"
+                # 删除已取消的孤儿条目，避免内存泄漏
+                _pending_approvals.pop(_aid, None)
 
     # DB 清理
     try:

@@ -139,6 +139,7 @@ async def lifespan(app: FastAPI):
     else:
         await manager.pause_on_startup()
     # 启动审计日志后台定时清理任务（每小时清理过期日志）
+    from app.audit import start_retention_loop  # 懒导入，避免循环依赖
     retention_task = asyncio.create_task(start_retention_loop())
     try:
         yield
