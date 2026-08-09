@@ -1,0 +1,11 @@
+name: arjun_param
+description: Arjun 隐藏参数发现工具，探测 HTTP 请求中的隐藏查询参数
+command: "arjun -u {url} -t 4"
+category: api_security
+timeout: 180
+tags: [recon, parameter, api, discovery]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com/page

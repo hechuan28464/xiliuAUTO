@@ -1,0 +1,16 @@
+name: masscan_port
+description: 高速端口扫描器，快速发现开放端口
+command: "masscan {target} -p{ports} --rate 1000 --wait 3"
+category: network_scanner
+timeout: 90
+tags: [scan, port, network]
+parameters:
+  - name: target
+    type: string
+    required: true
+    description: 目标 IP 或 CIDR，如 192.168.1.1 或 10.0.0.0/24
+  - name: ports
+    type: string
+    required: false
+    default: "1-10000"
+    description: 端口范围，如 80,443,8080 或 1-65535

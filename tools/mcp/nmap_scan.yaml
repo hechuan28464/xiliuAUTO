@@ -1,0 +1,16 @@
+name: nmap_scan
+description: Nmap 网络扫描工具，进行服务版本探测和脚本扫描，识别开放端口及运行服务
+command: "nmap -sV -sC --top-ports {top_ports} {target} --open -T4"
+category: network_scanner
+timeout: 300
+tags: [recon, network, port, service]
+parameters:
+  - name: target
+    type: string
+    required: true
+    description: 目标 IP 或网段，如 192.168.1.1 或 192.168.1.0/24
+  - name: top_ports
+    type: string
+    required: false
+    default: "1000"
+    description: 扫描 top N 端口数，如 1000、100

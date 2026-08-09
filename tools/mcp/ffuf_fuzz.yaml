@@ -1,0 +1,16 @@
+name: ffuf_fuzz
+description: Web 模糊测试工具，用于参数发现、目录枚举、vhost 发现
+command: "ffuf -u {url} -w {wordlist} -t 30 -mc 200,204,301,302,307,401,403 -s"
+category: web_scanner
+timeout: 120
+tags: [recon, fuzzing, enumeration]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，用 FUZZ 关键字标记位置，如 https://example.com/FUZZ
+  - name: wordlist
+    type: string
+    required: false
+    default: /usr/share/wordlists/dirb/common.txt
+    description: 字典文件路径

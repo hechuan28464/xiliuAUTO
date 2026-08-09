@@ -1,0 +1,11 @@
+name: graphql_scan
+description: GraphQL 扫描工具，检测目标是否存在 GraphQL 端点及信息泄露
+command: "graphql-scanner -u {url} -v"
+category: api_security
+timeout: 120
+tags: [api, graphql, recon, security]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com/graphql

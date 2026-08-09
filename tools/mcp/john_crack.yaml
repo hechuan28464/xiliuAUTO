@@ -1,0 +1,21 @@
+name: john_crack
+description: John the Ripper 密码破解工具，支持多种哈希格式的离线破解
+command: "john --wordlist={wordlist} {hash_file} --format={format}"
+category: password_crack
+timeout: 600
+tags: [password, crack, hash, offline]
+parameters:
+  - name: hash_file
+    type: string
+    required: true
+    description: 哈希文件路径，如 /etc/shadow 或 passwd 文件
+  - name: wordlist
+    type: string
+    required: false
+    default: /usr/share/wordlists/rockyou.txt
+    description: 密码字典路径
+  - name: format
+    type: string
+    required: false
+    default: auto
+    description: 哈希格式，如 raw-md5、sha512crypt、auto

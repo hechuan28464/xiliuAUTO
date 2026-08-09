@@ -1,0 +1,16 @@
+name: gobuster_dir
+description: 目录和文件暴力枚举，发现隐藏路径
+command: "gobuster dir -u {url} -w {wordlist} -t 20 -q --no-error"
+category: web_scanner
+timeout: 120
+tags: [recon, directory, bruteforce]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com
+  - name: wordlist
+    type: string
+    required: false
+    default: /usr/share/wordlists/dirb/common.txt
+    description: 字典文件路径

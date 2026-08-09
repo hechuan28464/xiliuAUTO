@@ -1,0 +1,11 @@
+name: dirb_scan
+description: Dirb 目录扫描工具，使用 common.txt 字典扫描隐藏目录和文件
+command: "dirb {url} /usr/share/wordlists/dirb/common.txt -r -z 100 -S"
+category: web_scanner
+timeout: 180
+tags: [recon, directory, bruteforce, web]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com/

@@ -1,0 +1,11 @@
+name: amass_enum
+description: 深度子域名枚举和网络映射，综合多数据源和主动验证
+command: "amass enum -d {domain} -passive -timeout 30"
+category: subdomain
+timeout: 120
+tags: [recon, subdomain, osint]
+parameters:
+  - name: domain
+    type: string
+    required: true
+    description: 目标根域名，如 example.com

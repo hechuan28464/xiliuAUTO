@@ -1,0 +1,11 @@
+name: nbtscan
+description: NetBIOS 扫描工具，扫描 IP 范围内的 NetBIOS 名称和共享信息
+command: "nbtscan {target} -v"
+category: network_scanner
+timeout: 120
+tags: [recon, network, netbios, windows]
+parameters:
+  - name: target
+    type: string
+    required: true
+    description: 目标 IP 或 CIDR，如 192.168.1.0/24

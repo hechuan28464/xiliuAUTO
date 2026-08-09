@@ -1,0 +1,11 @@
+name: strings_extract
+description: Strings 字符串提取工具，从二进制文件中提取可读字符串
+command: "strings -n 8 {file_path} | head -100"
+category: binary_analysis
+timeout: 60
+tags: [binary, strings, extract, analysis]
+parameters:
+  - name: file_path
+    type: string
+    required: true
+    description: 待提取字符串的文件路径

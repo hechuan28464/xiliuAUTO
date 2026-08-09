@@ -1,0 +1,11 @@
+name: whatweb_detect
+description: WhatWeb 技术栈识别工具，识别网站使用的 CMS、框架、JS 库等
+command: "whatweb {url} --color=never --no-errors"
+category: recon
+timeout: 120
+tags: [recon, fingerprint, tech, cms]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com

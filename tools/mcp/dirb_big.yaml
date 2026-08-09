@@ -1,0 +1,11 @@
+name: dirb_big
+description: Dirb 大字典目录扫描工具，使用 big.txt 字典进行深度目录扫描
+command: "dirb {url} /usr/share/wordlists/dirb/big.txt -r -z 50 -S"
+category: web_scanner
+timeout: 300
+tags: [recon, directory, bruteforce, web]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com/

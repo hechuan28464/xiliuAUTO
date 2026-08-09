@@ -1,0 +1,25 @@
+name: hydra_brute
+description: 在线密码爆破工具，支持多种协议（SSH/FTP/HTTP/MySQL 等）
+command: "hydra -l {username} -P {wordlist} {target} {service} -t 4 -f -q"
+category: password_crack
+timeout: 120
+tags: [bruteforce, password, login]
+parameters:
+  - name: target
+    type: string
+    required: true
+    description: 目标地址，如 ssh://192.168.1.1 或 192.168.1.1
+  - name: service
+    type: string
+    required: true
+    description: 服务类型，如 ssh/ftp/http-get/http-post-form/mysql
+  - name: username
+    type: string
+    required: false
+    default: admin
+    description: 用户名
+  - name: wordlist
+    type: string
+    required: false
+    default: /usr/share/wordlists/fasttrack.txt
+    description: 密码字典路径

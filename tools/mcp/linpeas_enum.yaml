@@ -1,0 +1,7 @@
+name: linpeas_enum
+description: LinPEAS Linux 提权枚举工具，自动发现可能的权限提升路径
+command: "linpeas -q -s 2>/dev/null || /opt/linpeas/linpeas.sh -q -s 2>/dev/null"
+category: post_exploit
+timeout: 300
+tags: [privesc, enumeration, linux, post_exploit]
+parameters: []

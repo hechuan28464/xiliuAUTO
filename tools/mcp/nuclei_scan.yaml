@@ -1,0 +1,11 @@
+name: nuclei_scan
+description: Nuclei 漏洞扫描器，基于模板对目标 URL 进行已知漏洞检测
+command: "nuclei -u {url} -severity critical,high,medium -silent"
+category: vuln_scanner
+timeout: 300
+tags: [vulnerability, scanner, cve]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com

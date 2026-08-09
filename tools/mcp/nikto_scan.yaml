@@ -1,0 +1,11 @@
+name: nikto_scan
+description: Web 服务器漏洞扫描器，检测危险文件、过时软件、配置问题
+command: "nikto -h {url} -Tuning 1234567890 -timeout 10 -nointeractive -quiet"
+category: vuln_scanner
+timeout: 120
+tags: [scan, vulnerability, webserver]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com

@@ -1,0 +1,16 @@
+name: steghide_extract
+description: Steghide 隐写分析工具，从图片或音频中提取隐藏数据
+command: "steghide extract -sf {file_path} -p {passphrase} -f 2>/dev/null"
+category: forensics
+timeout: 60
+tags: [forensics, steganography, extract, hidden]
+parameters:
+  - name: file_path
+    type: string
+    required: true
+    description: 待提取的载体文件路径，如 jpg/wav 文件
+  - name: passphrase
+    type: string
+    required: false
+    default: ""
+    description: 提取密码短语，空串表示无密码

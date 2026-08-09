@@ -1,0 +1,11 @@
+name: httpx_probe
+description: HTTPX HTTP 探活工具，批量探测目标存活性、状态码、标题及技术栈
+command: "httpx -u {url} -silent -status-code -title -tech-detect -follow-redirects"
+category: recon
+timeout: 120
+tags: [recon, http, probe, fingerprint]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com

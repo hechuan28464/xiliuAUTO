@@ -1,0 +1,11 @@
+name: binwalk_analyze
+description: Binwalk 二进制分析工具，识别固件中的嵌入文件和可提取内容
+command: "binwalk {file_path} -e --verbose"
+category: binary_analysis
+timeout: 180
+tags: [binary, firmware, analysis, extract]
+parameters:
+  - name: file_path
+    type: string
+    required: true
+    description: 待分析的二进制文件路径

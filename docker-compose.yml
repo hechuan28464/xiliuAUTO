@@ -1,0 +1,35 @@
+# ============================================================================
+#  xiliuAUTO  ——  AI 驱动的自动化漏洞挖掘与安全运营平台
+#  AI 自主漏洞挖掘平台 + MCP 工具生态 + RAG 知识库
+#  一键启动：  cp .env.example .env  &&  编辑 .env 填 LLM_API_KEY  &&  docker compose up -d --build
+#  或直接运行引导脚本：  bash scripts/install.sh
+# ============================================================================
+services:
+  autohunter:
+    build: .
+    image: xiliuauto:latest
+    container_name: xiliuauto
+    ports:
+      # 宿主机端口:容器端口。改宿主机端口：在 .env 里设 AUTOHUNTER_HOST_PORT
+      - "${AUTOHUNTER_HOST_PORT:-18800}:18800"
+    env_file:
+      - .env
+    environment:
+      - DB_PATH=/app/data/autohunter.db
+      - WORKER_WORK_ROOT=/work
+      - KNOWLEDGE_DB_PATH=/app/data/chroma
+      - MCP_TOOL_DIR=/app/tools/mcp
+    volumes:
+      - ah_data:/app/data        # SQLite + 证据 + ChromaDB 持久化（重启恢复依赖，勿删）
+      - ah_work:/work            # worker 临时工作区
+    restart: unless-stopped      # 崩溃自动重启，从 DB 恢复任务状态
+    # === 2C4G 资源限制 ===
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: "2"
+
+volumes:
+  ah_data:
+  ah_work:

@@ -1,0 +1,12 @@
+name: arp_scan
+description: ARP 扫描工具，发现本地网络中的存活主机及其 MAC 地址
+command: "arp-scan --localnet --interface {interface}"
+category: network_scanner
+timeout: 120
+tags: [recon, network, arp, discovery]
+parameters:
+  - name: interface
+    type: string
+    required: false
+    default: eth0
+    description: 网络接口名，如 eth0、wlan0

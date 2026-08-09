@@ -1,0 +1,11 @@
+name: dalfox_xss
+description: XSS 漏洞扫描器，自动检测反射型和存储型 XSS
+command: "dalfox url {url} --blind --skip-mining-all --skip-headless --quiet"
+category: vuln_scanner
+timeout: 120
+tags: [scan, xss, injection]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 带 参数的目标 URL，如 https://example.com/page?q=test

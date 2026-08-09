@@ -1,0 +1,11 @@
+name: wafw00f
+description: WAF 识别工具，检测目标网站使用的 Web 应用防火墙
+command: "wafw00f {url} -a"
+category: recon
+timeout: 30
+tags: [recon, waf, detection]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 https://example.com

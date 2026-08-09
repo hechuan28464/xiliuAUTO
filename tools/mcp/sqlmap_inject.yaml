@@ -1,0 +1,15 @@
+name: sqlmap_inject
+description: SQLMap SQL 注入检测工具，自动化检测和利用 SQL 注入漏洞
+command: "sqlmap -u {url} --batch --level 3 --risk 2 --threads 4"
+category: exploitation
+timeout: 300
+tags: [sqli, injection, database, exploitation]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: 目标 URL，如 http://example.com/page?id=1
+  - name: data
+    type: string
+    required: false
+    description: POST 提交数据，如 username=admin&password=test

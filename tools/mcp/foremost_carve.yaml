@@ -1,0 +1,11 @@
+name: foremost_carve
+description: Foremost 文件雕刻工具，从二进制数据中恢复和提取已知类型文件
+command: "foremost -i {file_path} -o /tmp/foremost_out -t all"
+category: forensics
+timeout: 180
+tags: [forensics, carve, recover, file]
+parameters:
+  - name: file_path
+    type: string
+    required: true
+    description: 待雕刻的输入文件或磁盘镜像路径

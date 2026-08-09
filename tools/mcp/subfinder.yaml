@@ -1,0 +1,11 @@
+name: subfinder
+description: 子域名枚举工具，从多个数据源发现目标的子域名
+command: "subfinder -d {domain} -silent -timeout 30"
+category: subdomain
+timeout: 60
+tags: [recon, subdomain, enumeration]
+parameters:
+  - name: domain
+    type: string
+    required: true
+    description: 目标根域名，如 example.com

@@ -1,0 +1,21 @@
+name: hashcat_crack
+description: Hashcat 哈希破解工具，使用 GPU 加速破解多种哈希类型
+command: "hashcat -m {hash_type} {hash} {wordlist} --force -O"
+category: password_crack
+timeout: 600
+tags: [password, crack, hash, gpu]
+parameters:
+  - name: hash
+    type: string
+    required: true
+    description: 待破解的哈希值或哈希文件路径
+  - name: hash_type
+    type: string
+    required: false
+    default: "0"
+    description: 哈希类型编号，如 0(MD5)、100(SHA1)、1000(NTLM)
+  - name: wordlist
+    type: string
+    required: false
+    default: /usr/share/wordlists/rockyou.txt
+    description: 密码字典路径

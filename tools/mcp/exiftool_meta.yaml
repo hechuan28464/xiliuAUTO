@@ -1,0 +1,11 @@
+name: exiftool_meta
+description: ExifTool 元数据提取工具，读取文件的 EXIF、IPTC、XMP 等元数据信息
+command: "exiftool {file_path} -j"
+category: forensics
+timeout: 60
+tags: [forensics, metadata, exif, file]
+parameters:
+  - name: file_path
+    type: string
+    required: true
+    description: 待提取元数据的文件路径

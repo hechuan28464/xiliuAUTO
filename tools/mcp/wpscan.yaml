@@ -1,0 +1,11 @@
+name: wpscan
+description: WordPress 漏洞扫描器，检测插件、主题、用户枚举
+command: "wpscan --url {url} --enumerate vp,vt,u --no-banner --quiet"
+category: vuln_scanner
+timeout: 120
+tags: [scan, wordpress, cms]
+parameters:
+  - name: url
+    type: string
+    required: true
+    description: WordPress 站点 URL，如 https://example.com
