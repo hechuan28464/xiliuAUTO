@@ -1,6 +1,6 @@
 """MCP 工具注册表：从 YAML 加载工具定义，动态生成 function calling schema。
 
-兼容 CyberStrikeAI 的 YAML 工具格式，让 Worker 按需调用 100+ 安全工具。
+YAML 工具配置格式，让 Worker 按需调用 100+ 安全工具。
 """
 from __future__ import annotations
 

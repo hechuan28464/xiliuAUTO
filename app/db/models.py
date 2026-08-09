@@ -291,7 +291,7 @@ class SystemSettings(Base):
 # ===== 融合版新增：资产管理 =====
 
 class Asset(Base):
-    """资产管理：域名/IP/端口/服务统一归档（从 CyberStrikeAI 移植）。
+    """资产管理：域名/IP/端口/服务统一归档（自研）。
 
     Collector 产出的目标自动归档到此表，Worker 发现的技术栈也写入。
     """
@@ -322,7 +322,7 @@ class Asset(Base):
 
 
 class VulnLifecycle(Base):
-    """漏洞生命周期扩展表：在 Finding 基础上增加状态流转（从 CyberStrikeAI 移植）。
+    """漏洞生命周期扩展表：在 Finding 基础上增加状态流转（自研）。
 
     状态流转：
     submitted → reviewed → accepted → reported → fixed / closed

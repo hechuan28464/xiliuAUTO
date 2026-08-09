@@ -1,6 +1,6 @@
 """融合版新增 API 路由：用户管理（RBAC）。
 
-从 CyberStrikeAI 移植用户管理能力。
+自研用户管理能力。
 """
 from __future__ import annotations
 

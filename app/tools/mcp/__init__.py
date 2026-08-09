@@ -1,6 +1,6 @@
 """MCP 工具模块：YAML 定义的命令行安全工具集成。
 
-从 CyberStrikeAI 移植的工具配方格式，让 Worker 按需调用 100+ 安全工具。
+自研的工具配置格式，让 Worker 按需调用 100+ 安全工具。
 """
 from app.tools.mcp.mcp_registry import (
     ToolDefinition,

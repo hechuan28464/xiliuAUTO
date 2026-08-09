@@ -1,6 +1,6 @@
 """融合版新增 API 路由：审计日志。
 
-从 CyberStrikeAI 移植审计日志能力。
+自研审计日志。
 """
 from __future__ import annotations
 

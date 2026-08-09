@@ -68,7 +68,8 @@ RUN (set -eux; \
 
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt || \
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip install --no-cache-dir -r requirements.txt || \
     (pip install --no-cache-dir openai httpx pydantic fastapi uvicorn websockets sqlalchemy greenlet aiosqlite python-multipart pyyaml && \
      pip install --no-cache-dir chromadb>=0.4.22,<0.5.0 || true)
 

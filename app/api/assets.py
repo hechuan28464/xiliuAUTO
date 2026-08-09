@@ -1,6 +1,6 @@
 """融合版新增 API 路由：资产管理。
 
-从 CyberStrikeAI 移植资产管理概念，Collector 产出的目标自动归档。
+自研资产管理，Collector 产出的目标自动归档。
 """
 from __future__ import annotations
 
