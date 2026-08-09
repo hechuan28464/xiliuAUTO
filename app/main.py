@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api import findings, intel, runtime_logs, settings, stream, tasks, update, vulns
 from app.api import assets, audit, hitl, notify_api, users, vuln_lifecycle
+from app.auth.middleware import rbac_middleware
 from app.db.session import init_db
 from app.ds2api_proxy import ENABLED as DS2API_ENABLED, router as ds2api_router
 from app.orchestrator import manager
@@ -121,6 +122,12 @@ async def lifespan(app: FastAPI):
         await create_default_roles()
     except Exception:
         pass
+    # HITL 孤儿清理：启动时把残留 pending 审批保守拒绝（fail-safe）
+    try:
+        from app.auth.hitl import cleanup_orphans
+        await cleanup_orphans()
+    except Exception:
+        pass
     if not auth_enabled():
         DIAG_LOG.warning(
             "安全告警：未配置任何访问令牌（AUTOHUNTER_API_TOKEN / _READ_TOKEN / _OBSERVER_TOKEN），"
@@ -131,12 +138,19 @@ async def lifespan(app: FastAPI):
         await manager.restore_on_startup()  # 重启恢复 running/idle 任务
     else:
         await manager.pause_on_startup()
+    # 启动审计日志后台定时清理任务（每小时清理过期日志）
+    retention_task = asyncio.create_task(start_retention_loop())
     try:
         yield
     finally:
         lag_monitor.cancel()
         try:
             await lag_monitor
+        except asyncio.CancelledError:
+            pass
+        retention_task.cancel()
+        try:
+            await retention_task
         except asyncio.CancelledError:
             pass
         await manager.shutdown()
@@ -165,22 +179,26 @@ async def security_middleware(request: Request, call_next):
             status_code=waf_decision.status_code,
         )
     elif auth_enabled() and protected_path(request.url.path):
-        allowed, role = request_allowed(request)
-        if not allowed:
-            if role in {"readonly", "observer"}:
-                detail = "观摩令牌不允许访问敏感信息或执行写操作" if role == "observer" else "只读令牌不允许此操作"
-                response = JSONResponse(
-                    {"detail": detail},
-                    status_code=403,
-                )
-            else:
-                response = JSONResponse(
-                    {"detail": "需要 AutoHunter 访问令牌"},
-                    status_code=401,
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-        else:
+        # RBAC 中间件已授权的请求（request.state.rbac_user 存在）跳过旧 token 检查
+        if getattr(request.state, "rbac_user", None):
             response = await call_next(request)
+        else:
+            allowed, role = request_allowed(request)
+            if not allowed:
+                if role in {"readonly", "observer"}:
+                    detail = "观摩令牌不允许访问敏感信息或执行写操作" if role == "observer" else "只读令牌不允许此操作"
+                    response = JSONResponse(
+                        {"detail": detail},
+                        status_code=403,
+                    )
+                else:
+                    response = JSONResponse(
+                        {"detail": "需要 AutoHunter 访问令牌"},
+                        status_code=401,
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+            else:
+                response = await call_next(request)
     else:
         response = await call_next(request)
     for key, value in SECURITY_HEADERS.items():
@@ -188,6 +206,9 @@ async def security_middleware(request: Request, call_next):
     for key, value in waf_headers(waf_decision).items():
         response.headers.setdefault(key, value)
     return response
+
+# 注册 RBAC 集中式权限中间件（最外层，先于 security_middleware 执行）
+app.middleware("http")(rbac_middleware)
 
 app.include_router(tasks.router)
 app.include_router(findings.router)

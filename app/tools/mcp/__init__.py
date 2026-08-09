@@ -1,4 +1,4 @@
-"""MCP 工具模块：YAML 定义的命令行安全工具集成。
+"""MCP 工具模块：YAML 定义的命令行安全工具集成 + 后台执行引擎。
 
 自研的工具配置格式，让 Worker 按需调用 100+ 安全工具。
 """
@@ -7,6 +7,7 @@ from app.tools.mcp.mcp_registry import (
     get_schemas,
     get_schemas_for_categories,
     get_tool,
+    get_tools,
     is_loaded,
     list_tool_names,
     list_tools,
@@ -14,20 +15,41 @@ from app.tools.mcp.mcp_registry import (
 )
 from app.tools.mcp.client import (
     execute_mcp_tool,
+    execute_mcp_tool_async,
     format_tool_result,
     is_high_risk_tool,
+)
+from app.tools.mcp.execution import (
+    EXECUTION_META_HANDLERS,
+    EXECUTION_META_SCHEMAS,
+    ExecutionState,
+    MCPExecution,
+    cancel_tool_execution,
+    get_execution_engine,
+    get_tool_execution,
+    wait_tool_execution,
 )
 
 __all__ = [
     "ToolDefinition",
     "load_tools",
     "get_tool",
+    "get_tools",
     "list_tools",
     "list_tool_names",
     "get_schemas",
     "get_schemas_for_categories",
     "is_loaded",
     "execute_mcp_tool",
+    "execute_mcp_tool_async",
     "format_tool_result",
     "is_high_risk_tool",
+    "MCPExecution",
+    "ExecutionState",
+    "get_execution_engine",
+    "get_tool_execution",
+    "wait_tool_execution",
+    "cancel_tool_execution",
+    "EXECUTION_META_SCHEMAS",
+    "EXECUTION_META_HANDLERS",
 ]

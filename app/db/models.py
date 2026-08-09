@@ -342,3 +342,34 @@ class VulnLifecycle(Base):
     timeline: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now)
+
+
+# ===== HITL 持久化中断表（参考 CyberStrikeAI 的 hitl_interrupts 表）=====
+
+class HitlInterrupt(Base):
+    """HITL 中断记录（持久化中断表）。
+
+    所有审批中断持久化到 DB，进程重启后 pending 记录由孤儿清理保守拒绝（fail-safe）。
+    payload 存储认知上下文（thinking/reasoning_chain/planning/user_message）+ 执行回执。
+    """
+    __tablename__ = "hitl_interrupts"
+    __table_args__ = (
+        # 孤儿清理 / 列表查询：按 status 过滤 + created_at 排序
+        Index("ix_hitl_status_created", "status", "created_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    conversation_id: Mapped[str] = mapped_column(String(32), index=True, default="")
+    tool_name: Mapped[str] = mapped_column(String(100), default="")
+    tool_call_id: Mapped[str] = mapped_column(String(128), default="", index=True)
+    # 认知上下文 + 执行回执：{args, reason, thinking, reasoning_chain, planning, user_message, execution_result}
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    # pending / decided / timeout / cancelled
+    status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
+    # approve / reject（仅 status=decided/timeout/cancelled 时有意义）
+    decision: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    decision_comment: Mapped[str] = mapped_column(Text, default="")
+    # human / audit_agent / system
+    decided_by: Mapped[str] = mapped_column(String(20), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
