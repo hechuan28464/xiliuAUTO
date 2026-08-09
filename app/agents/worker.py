@@ -6,11 +6,13 @@
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import re
 import threading
 import time
+import uuid
 from typing import Any, Callable, Optional
 from urllib.parse import urlparse
 
@@ -50,6 +52,50 @@ _WORKER_LLM_SOFT_RETRY_KINDS = {
     "rate_limit", "timeout", "network", "upstream", "provider_cooldown",
     "blocked", "unknown", "quota",
 }
+
+# 长耗时安全工具列表：改用 MCP 后台执行引擎（submit + wait），避免阻塞 worker 主循环
+_LONG_RUNNING_TOOLS = frozenset({
+    "nmap", "nikto", "nuclei", "sqlmap", "masscan", "hydra",
+    "gobuster", "ffuf", "subfinder", "amass",
+})
+
+
+def _is_long_running(tool_name: str) -> bool:
+    """判断工具是否属于长耗时工具（需走后台执行引擎）。"""
+    if not tool_name:
+        return False
+    # 兼容带路径的工具名（如 /usr/bin/nmap）
+    return tool_name.split("/")[-1].split()[0] in _LONG_RUNNING_TOOLS
+
+
+def _run_async(coro):
+    """在同步上下文中运行协程（worker 运行在独立线程，无事件循环）。"""
+    return asyncio.run(coro)
+
+
+async def _hitl_request_and_wait(
+    approval_id: str, tool_name: str, args: dict,
+    conversation_id: str, reason: str, timeout: float = 300,
+) -> dict:
+    """HITL 审批：提交请求并阻塞等待决议（需在同一事件循环中运行）。"""
+    from app.auth.hitl import request_approval, wait_approval
+    await request_approval(
+        approval_id=approval_id,
+        tool_name=tool_name,
+        args=args,
+        reason=reason,
+        conversation_id=conversation_id,
+    )
+    return await wait_approval(approval_id, timeout=timeout)
+
+
+async def _mcp_submit_and_wait(
+    engine, tool_name: str, args: dict,
+    submit_timeout: float, wait_timeout: float,
+) -> dict:
+    """MCP 后台执行：提交并等待（需在同一事件循环中运行）。"""
+    execution_id = await engine.submit(tool_name, args, timeout=submit_timeout)
+    return await engine.wait(execution_id, timeout=wait_timeout)
 
 
 class Worker:
@@ -945,6 +991,59 @@ class Worker:
         if name in self._mcp_tool_names:
             self._mark_tool_used(name, rnd)
             self._emit("tool_mcp", round=rnd, tool=name, args_keys=list(args.keys()))
+
+            # HITL 审批检查（默认关闭，仅 HITL_MODE 启用且高危工具时触发）
+            approval_id = ""
+            try:
+                from app.auth.hitl import should_human_review
+                severity = "高危" if is_high_risk_tool(name, args) else ""
+                if should_human_review(verdict="", severity=severity, tool_name=name):
+                    approval_id = uuid.uuid4().hex[:16]
+                    wait_result = _run_async(_hitl_request_and_wait(
+                        approval_id, name, args, self.target,
+                        "HITL 审批：高危工具执行前需人工确认", 300,
+                    ))
+                    if wait_result.get("decision") != "approve":
+                        return {"ok": False,
+                                "error": f"工具执行被拒绝: {wait_result.get('comment', '')}"}
+            except Exception as e:
+                self._emit("hitl_error", tool=name, error=str(e)[:200])
+
+            # 长耗时工具走后台执行引擎（submit + wait），否则同步执行
+            if _is_long_running(name):
+                try:
+                    from app.tools.mcp.execution import get_execution_engine
+                    engine = get_execution_engine()
+                    submit_timeout = float(args.get("timeout") or worker_config.shell_timeout_max)
+                    wait_timeout = float(worker_config.shell_timeout)
+                    exec_result = _run_async(_mcp_submit_and_wait(
+                        engine, name, args, submit_timeout, wait_timeout,
+                    ))
+                    if exec_result.get("status") == "completed":
+                        raw = exec_result.get("result") or {}
+                        output = format_tool_result(raw)
+                        # 执行回执：如果经过了 HITL 审批，记录执行结果
+                        if approval_id:
+                            try:
+                                from app.auth.hitl import record_execution_result
+                                _run_async(record_execution_result(
+                                    approval_id,
+                                    {"ok": raw.get("returncode") == 0, "output": output[:500]},
+                                ))
+                            except Exception:
+                                pass
+                        return {"ok": raw.get("returncode") == 0, "output": output,
+                                "returncode": raw.get("returncode"), "tool": name}
+                    elif exec_result.get("status") in ("timeout", "hard_timeout"):
+                        return {"ok": False, "error": "工具执行超时",
+                                "partial": exec_result.get("partial_output", "")}
+                    else:
+                        return {"ok": False,
+                                "error": exec_result.get("error", "执行失败")}
+                except Exception as e:
+                    self._emit("mcp_execution_error", tool=name, error=str(e)[:200])
+                    # 降级为同步执行
+
             result = execute_mcp_tool(
                 tool_name=name,
                 args=args,
@@ -962,6 +1061,17 @@ class Worker:
                         technique=args.get("domain") or args.get("url") or "",
                         payload=result["stdout"][:500],
                     )
+                except Exception:
+                    pass
+            # 执行回执：如果经过了 HITL 审批，记录执行结果
+            if approval_id:
+                try:
+                    from app.auth.hitl import record_execution_result
+                    _run_async(record_execution_result(
+                        approval_id,
+                        {"ok": result["returncode"] == 0,
+                         "output": format_tool_result(result)[:500]},
+                    ))
                 except Exception:
                     pass
             return {"ok": result["returncode"] == 0, "output": format_tool_result(result),
