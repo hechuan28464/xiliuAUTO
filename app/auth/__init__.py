@@ -1,4 +1,4 @@
-"""RBAC 权限模块：用户/角色/权限管理（从 CyberStrikeAI 移植）。
+"""RBAC 权限模块：用户/角色/权限管理。
 
 角色：
 - admin: 全权限（创建/管理任务、复审漏洞、配置系统、管理用户）
@@ -13,7 +13,6 @@ from app.auth.rbac import (
     AuditLog,
     Permission,
     ROLE_PERMISSIONS,
-    Role,
     User,
     authenticate,
     check_permission,

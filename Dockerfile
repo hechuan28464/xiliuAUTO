@@ -23,13 +23,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         whatweb \
     && rm -rf /var/lib/apt/lists/*
 
-# === 融合版新增：MCP 扩展安全工具（只装 debian 源里有的，其余从 release 拉） ===
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        nikto \
-        dirb \
-        hydra \
-        john \
-    && rm -rf /var/lib/apt/lists/*
+# === 融合版新增：MCP 扩展安全工具（可选，失败不阻断构建） ===
+RUN (apt-get update && apt-get install -y --no-install-recommends hydra john || true) && rm -rf /var/lib/apt/lists/* || true
+RUN (git clone --depth 1 https://github.com/sullo/nikto.git /opt/nikto && ln -s /opt/nikto/nikto.pl /usr/local/bin/nikto && chmod +x /usr/local/bin/nikto) || true
 
 # sqlmap（git 安装，复用官方）
 RUN git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git /opt/sqlmap \
@@ -51,28 +47,24 @@ RUN set -eux; \
     rm -f /tmp/*.zip; \
     apt-get purge -y unzip; rm -rf /var/lib/apt/lists/*
 
-# === 融合版新增：Go 编写的安全工具（从 Release 拉预编译二进制，避免装 Go 编译器） ===
+# === 融合版新增：Go 编写的安全工具（从 Release 拉预编译二进制，失败不阻断构建） ===
 ARG TARGETARCH
-RUN set -eux; \
+RUN (set -eux; \
     cd /tmp; \
     apt-get update && apt-get install -y --no-install-recommends unzip; \
-    # subfinder
     SUBFINDER_VER=2.6.7; \
     wget -q "https://github.com/projectdiscovery/subfinder/releases/download/v${SUBFINDER_VER}/subfinder_${SUBFINDER_VER}_linux_${TARGETARCH}.zip" -O subfinder.zip; \
     unzip -o subfinder.zip subfinder -d /usr/local/bin/; \
-    # ffuf
     FFUF_VER=2.1.0; \
     wget -q "https://github.com/ffuf/ffuf/releases/download/v${FFUF_VER}/ffuf_${FFUF_VER}_linux_${TARGETARCH}.tar.gz" -O ffuf.tar.gz; \
     tar xzf ffuf.tar.gz ffuf -C /usr/local/bin/; \
-    # wafw00f - Python 安装更轻量
     pip install --no-cache-dir wafw00f; \
-    # dalfox
     DALFOX_VER=2.9.2; \
     wget -q "https://github.com/hahwul/dalfox/releases/download/v${DALFOX_VER}/dalfox_${DALFOX_VER}_linux_${TARGETARCH}.tar.gz" -O dalfox.tar.gz; \
     tar xzf dalfox.tar.gz dalfox -C /usr/local/bin/; \
     chmod +x /usr/local/bin/subfinder /usr/local/bin/ffuf /usr/local/bin/dalfox; \
     rm -f /tmp/*.zip /tmp/*.tar.gz; \
-    apt-get purge -y unzip; rm -rf /var/lib/apt/lists/*
+    apt-get purge -y unzip; rm -rf /var/lib/apt/lists/*) || true
 
 WORKDIR /app
 COPY requirements.txt .

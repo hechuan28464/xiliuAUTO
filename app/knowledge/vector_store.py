@@ -39,7 +39,16 @@ class VectorStore:
         try:
             import chromadb
             self._db_path.mkdir(parents=True, exist_ok=True)
-            self._client = chromadb.PersistentClient(path=str(self._db_path))
+            # chromadb 0.4.x 用 PersistentClient，0.5.x 的 API 变了
+            try:
+                self._client = chromadb.PersistentClient(path=str(self._db_path))
+            except Exception:
+                # 0.5+ 的 RustBindingsAPI 兼容问题，降级用 Settings
+                from chromadb.config import Settings
+                self._client = chromadb.PersistentClient(
+                    path=str(self._db_path),
+                    settings=Settings(anonymized_telemetry=False, allow_reset=True),
+                )
             for name in [COLLECTION_VULNS, COLLECTION_INTEL, COLLECTION_ATTACK_CHAIN, COLLECTION_BYPASS]:
                 self._collections[name] = self._client.get_or_create_collection(
                     name=name,
@@ -51,7 +60,7 @@ class VectorStore:
             logger.warning("chromadb 未安装，知识库功能降级（仅文本检索）")
             self._connected = False
         except Exception as e:
-            logger.error("ChromaDB 初始化失败: %s", e)
+            logger.warning("ChromaDB 初始化失败（降级为禁用知识库）: %s", e)
             self._connected = False
 
     def add(self, collection: str, doc_id: str, text: str, metadata: dict | None = None, embedding: list[float] | None = None):
