@@ -13,4 +13,5 @@ aiosqlite>=0.19.0
 python-multipart>=0.0.9
 # === 融合版新增依赖 ===
 pyyaml>=6.0
+# chromadb 可选：pip install chromadb>=0.4.22,<0.5.0（失败不阻断，降级为禁用知识库）
 chromadb>=0.4.22,<0.5.0
